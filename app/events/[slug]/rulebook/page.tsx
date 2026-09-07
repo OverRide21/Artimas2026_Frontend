@@ -1,0 +1,125 @@
+import Link from 'next/link';
+import { notFound, redirect } from 'next/navigation';
+import { getEventBySlug } from '@/lib/events';
+import SubpageLayout from '@/components/SubpageLayout';
+import EventContactButton from '@/components/EventContactButton';
+
+const rawBackend = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE = rawBackend.endsWith('/api') ? rawBackend : `${rawBackend.replace(/\/+$/, '')}/api`;
+
+interface RulebookPageProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
+
+export default async function RulebookPage({ params }: RulebookPageProps) {
+  const { slug } = await params;
+  const event = getEventBySlug(slug);
+
+  if (!event) {
+    notFound();
+  }
+
+  // If this event has an external PDF rulebook (Cloudinary), redirect directly to it
+  if (event.rulebookUrl && event.rulebookUrl.startsWith('http')) {
+    redirect(event.rulebookUrl);
+  }
+
+  // Fetch live registrationOpen status from backend
+  let isRegistrationOpen = true;
+  try {
+    const res = await fetch(`${API_BASE}/events/${slug}`, { cache: 'no-store' });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) {
+        isRegistrationOpen = json.data.registrationOpen !== false && json.data.active !== false;
+      }
+    }
+  } catch {
+    // fallback to open if API unreachable
+    isRegistrationOpen = true;
+  }
+
+  return (
+    <SubpageLayout showHeader={false} fullWidth={true}>
+      <div className="reg-stage-wrapper">
+        <div className="reg-top-bar">
+          <Link href="/events" className="reg-back-btn">
+            ← BACK TO EVENTS
+          </Link>
+          <span className="reg-tag">{event.yuga} • {event.category}</span>
+        </div>
+
+        <div className="reg-card-stage">
+          <div className="decree-card-panel decree-rulebook-panel">
+            {/* Ornamental Decree Corner Brackets */}
+            <div className="decree-corner top-left" aria-hidden="true" />
+            <div className="decree-corner top-right" aria-hidden="true" />
+            <div className="decree-corner bottom-left" aria-hidden="true" />
+            <div className="decree-corner bottom-right" aria-hidden="true" />
+
+            <div className="decree-inner-frame rulebook-inner-frame">
+              {event.overheadTitle && (
+                <span className="decree-overhead-title rulebook-overhead-title">{event.overheadTitle}</span>
+              )}
+              <h1 className="decree-title rulebook-main-title">{event.name}</h1>
+              <p className="decree-trial-subtitle rulebook-subtitle">
+                {event.ruleSubtitle || event.trialSubtitle || 'OFFICIAL RULES & GUIDELINES'}
+              </p>
+
+              <div className="decree-ornament-divider" aria-hidden="true">
+                <span className="decree-divider-line" />
+                <span className="decree-divider-gem">◆</span>
+                <span className="decree-divider-line" />
+              </div>
+
+              <div className="rulebook-scroll-box">
+                <section className="rulebook-sec">
+                  <h3>I. OVERVIEW & DESCRIPTION</h3>
+                  <p>{event.description}</p>
+                </section>
+
+                <section className="rulebook-sec">
+                  <h3>II. TEAM COMPOSITION</h3>
+                  <p>
+                    {event.teamConfig.isCompulsoryFixed
+                      ? `Compulsory ${event.teamConfig.minMembers} member(s) required per team.`
+                      : `Teams can consist of ${event.teamConfig.minMembers} to ${event.teamConfig.maxMembers} member(s).`}
+                  </p>
+                </section>
+
+                <section className="rulebook-sec">
+                  <h3>III. GENERAL GUIDELINES</h3>
+                  <ul>
+                    <li>All participants must carry a valid College ID Card.</li>
+                    <li>Any form of unfair means or plagiarism will lead to immediate disqualification.</li>
+                    <li>Decisions of the jury and organizing committee will be final and binding.</li>
+                  </ul>
+                </section>
+              </div>
+
+              <div className="decree-btn-group rulebook-btn-row">
+                {isRegistrationOpen ? (
+                  <Link
+                    href={event.registerUrl}
+                    className="decree-btn register-action-btn"
+                    target={event.registerUrl?.startsWith('http') ? '_blank' : undefined}
+                    rel={event.registerUrl?.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  >
+                    ENTER THE TRIAL (₹{event.fee})
+                  </Link>
+                ) : (
+                  <div className="decree-btn register-action-btn closed">
+                    REGISTRATION CLOSED
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <EventContactButton currentEventSlug={slug} currentEventName={event.name} />
+    </SubpageLayout>
+  );
+}
