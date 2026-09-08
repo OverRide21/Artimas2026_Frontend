@@ -55,6 +55,206 @@ function normalizeToYuga(angle: number): YugaAngle {
   return (snapped as YugaAngle);
 }
 
+const YUGA_ANGLE_MAP: Record<string, YugaAngle> = {
+  'Satya Yuga': 0,
+  'Treta Yuga': 90,
+  'Dwapara Yuga': 180,
+  'Kali Yuga': 270,
+};
+
+const YUGA_START_EVENT_INDEX: Record<YugaAngle, number> = {
+  0: 0,
+  90: 2,
+  180: 4,
+  270: 6,
+};
+
+interface DecreeCardContentProps {
+  evt: (typeof EVENTS)[0];
+  openMap: Record<string, boolean>;
+  isSideCard?: boolean;
+}
+
+function DecreeCardContent({ evt, openMap, isSideCard = false }: DecreeCardContentProps) {
+  const isRegistrationOpen = openMap[evt.slug] !== false && openMap[evt.id] !== false;
+
+  return (
+    <>
+      {/* Ornamental Decree Corner Brackets */}
+      <div className="decree-corner top-left" aria-hidden="true" />
+      <div className="decree-corner top-right" aria-hidden="true" />
+      <div className="decree-corner bottom-left" aria-hidden="true" />
+      <div className="decree-corner bottom-right" aria-hidden="true" />
+
+      <div className="yuga-decree-inner">
+        {/* Top Header Group (Crest + Title + Epoch badge) */}
+        <div className="yuga-card-header-group">
+          <div className="yuga-mythic-crest-box" aria-hidden="true">
+            <MythicCrestIcon type={evt.mythicCrest || 'lotus'} />
+          </div>
+          {evt.overheadTitle && (
+            <span className="yuga-decree-overhead-title">{evt.overheadTitle}</span>
+          )}
+          <h3 className="yuga-decree-title">{evt.name}</h3>
+          <span className="yuga-card-epoch-pill">{evt.yuga}</span>
+        </div>
+
+        {/* Middle Body Group: Center Art + Short Description */}
+        <div className="yuga-card-body">
+          {evt.slug === 'datathon' ? (
+            <div className="yuga-card-center-art datathon-art" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={MEDIA.images.datathonFish}
+                alt="Datathon Matsya Golden Fish"
+                className="yuga-art-img yuga-datathon-fish"
+                draggable={false}
+                loading="lazy"
+              />
+            </div>
+          ) : evt.slug === 'prompt-relay' ? (
+            <div className="yuga-card-center-art prompt-relay-art" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={MEDIA.images.promptRelayLotus}
+                alt="Prompt Relay Golden Lotus"
+                className="yuga-art-img yuga-prompt-relay-lotus"
+                draggable={false}
+                loading="lazy"
+              />
+            </div>
+          ) : evt.slug === 'brandathon' ? (
+            <div className="yuga-card-center-art brandathon-art" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={MEDIA.images.brandathonRath}
+                alt="Brandathon Golden Rath"
+                className="yuga-art-img yuga-brandathon-rath"
+                draggable={false}
+                loading="lazy"
+              />
+            </div>
+          ) : evt.slug === 'hackmatrix' ? (
+            <div className="yuga-card-center-art hackmatrix-art" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={MEDIA.images.hackmatrixArt}
+                alt="HackMatrix Golden Emblem"
+                className="yuga-art-img yuga-hackmatrix-art"
+                draggable={false}
+                loading="lazy"
+              />
+            </div>
+          ) : evt.slug === 'capture-the-flag' ? (
+            <div className="yuga-card-center-art ctf-art" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={MEDIA.images.ctfFeather}
+                alt="CTF Golden Peacock Feather"
+                className="yuga-art-img yuga-ctf-feather"
+                draggable={false}
+                loading="lazy"
+              />
+            </div>
+          ) : evt.slug === 'among-us' ? (
+            <div className="yuga-card-center-art among-us-art" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={MEDIA.images.amongUsArt}
+                alt="Among Us Golden Bow & Arrow"
+                className="yuga-art-img yuga-among-us-art"
+                draggable={false}
+                loading="lazy"
+              />
+            </div>
+          ) : evt.slug === 'pixel-perfect' || evt.slug === 'surprise-event' ? (
+            <div className="yuga-card-center-art surprise-art pixel-perfect-art" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={MEDIA.images.pixelPerfectTurtle}
+                alt="Surprise Event Kurma Golden Turtle"
+                className="yuga-art-img yuga-surprise-turtle"
+                draggable={false}
+                loading="lazy"
+              />
+            </div>
+          ) : evt.slug === 'houdini-heist' ? (
+            <div className="yuga-card-center-art houdini-art" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={MEDIA.images.houdiniHeistArt}
+                alt="Houdini Heist Golden Mace"
+                className="yuga-art-img yuga-houdini-gada"
+                draggable={false}
+                loading="lazy"
+              />
+            </div>
+          ) : (
+            /* Ornamental Divider with Epoch Star */
+            <div className="decree-ornament-divider" aria-hidden="true">
+              <span className="decree-divider-line" />
+              <span className="decree-divider-gem">✦</span>
+              <span className="decree-divider-line" />
+            </div>
+          )}
+
+          {/* Short Description */}
+          <p className="yuga-decree-desc">{evt.shortDescription}</p>
+        </div>
+
+        {/* Footer Group: Prize Pool + Actions */}
+        <div className="yuga-card-footer">
+          {evt.prizePool && (
+            <div className="yuga-card-meta-row">
+              <span className="yuga-decree-prize-badge">{evt.prizePool}</span>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className={`yuga-decree-actions ${!isRegistrationOpen ? 'single-btn is-closed' : ''}`}>
+            {isRegistrationOpen ? (
+              <>
+                <Link
+                  href={evt.rulebookUrl}
+                  className="yuga-decree-btn secondary"
+                  onClick={(e) => {
+                    if (isSideCard) e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  tabIndex={isSideCard ? -1 : 0}
+                  target={evt.rulebookUrl?.startsWith('http') ? '_blank' : undefined}
+                  rel={evt.rulebookUrl?.startsWith('http') ? 'noopener noreferrer' : undefined}
+                >
+                  VIEW RULEBOOK
+                </Link>
+                <Link
+                  href={evt.registerUrl}
+                  className="yuga-decree-btn primary"
+                  onClick={(e) => {
+                    if (isSideCard) e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  tabIndex={isSideCard ? -1 : 0}
+                  target={evt.registerUrl?.startsWith('http') ? '_blank' : undefined}
+                  rel={evt.registerUrl?.startsWith('http') ? 'noopener noreferrer' : undefined}
+                >
+                  ENTER TRIAL
+                </Link>
+              </>
+            ) : (
+              <div
+                className="yuga-decree-btn closed"
+                onClick={(e) => e.stopPropagation()}
+              >
+                REGISTRATION CLOSED
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -106,79 +306,18 @@ export default function ArtimasScene() {
     }
   }, [showIntro]);
 
-  // ── Mobile Card Deck State & Touch Swipe Handlers ──────────────────────────
-  const [mobileCardIndex, setMobileCardIndex] = useState(0);
-  const [switchingCard, setSwitchingCard] = useState<{ outgoing: number; incoming: number } | null>(null);
-  const switchTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const cardTouchStartX = useRef(0);
-  const cardTouchStartY = useRef(0);
-  const cardTouchDeltaX = useRef(0);
-  const cardTouchDeltaY = useRef(0);
-
-  const switchMobileCard = useCallback((targetIndex: number) => {
-    if (switchTimerRef.current) return;
-    setMobileCardIndex((current) => {
-      if (targetIndex === current) return current;
-      setSwitchingCard({ outgoing: current, incoming: targetIndex });
-      switchTimerRef.current = setTimeout(() => {
-        setSwitchingCard(null);
-        switchTimerRef.current = null;
-      }, 2000);
-      return targetIndex;
-    });
-  }, []);
-
-  // Reset mobile card index & cancel ongoing animation when activeYuga changes
+  // ── Mobile Arc Carousel State & Touch Swipe Handlers (< 768px) ─────────────
+  const [mobileEventIndex, setMobileEventIndex] = useState(0);
+  const mobileEventIndexRef = useRef(mobileEventIndex);
   useEffect(() => {
-    if (switchTimerRef.current) {
-      clearTimeout(switchTimerRef.current);
-      switchTimerRef.current = null;
-    }
-    setSwitchingCard(null);
-    setMobileCardIndex(0);
-  }, [activeYuga]);
+    mobileEventIndexRef.current = mobileEventIndex;
+  }, [mobileEventIndex]);
 
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (switchTimerRef.current) {
-        clearTimeout(switchTimerRef.current);
-      }
-    };
-  }, []);
-
-  const mobileCardIndexRef = useRef(mobileCardIndex);
-  useEffect(() => {
-    mobileCardIndexRef.current = mobileCardIndex;
-  }, [mobileCardIndex]);
-
-  const handleDeckTouchStart = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    cardTouchStartX.current = e.touches[0].clientX;
-    cardTouchStartY.current = e.touches[0].clientY;
-    cardTouchDeltaX.current = 0;
-    cardTouchDeltaY.current = 0;
-  };
-
-  const handleDeckTouchMove = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    cardTouchDeltaX.current = e.touches[0].clientX - cardTouchStartX.current;
-    cardTouchDeltaY.current = e.touches[0].clientY - cardTouchStartY.current;
-  };
-
-  const handleDeckTouchEnd = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    if (switchTimerRef.current) return;
-    const swipeThreshold = 35;
-    if (
-      Math.abs(cardTouchDeltaX.current) > swipeThreshold ||
-      Math.abs(cardTouchDeltaY.current) > swipeThreshold
-    ) {
-      switchMobileCard(mobileCardIndex === 0 ? 1 : 0);
-    }
-    cardTouchDeltaX.current = 0;
-    cardTouchDeltaY.current = 0;
-  };
+  const arcTouchStartX = useRef(0);
+  const arcTouchStartY = useRef(0);
+  const arcTouchDeltaX = useRef(0);
+  const arcTouchDeltaY = useRef(0);
+  const isArcSwiping = useRef(false);
 
   // ── Refs ───────────────────────────────────────────────────────────────────
   const chakraRef = useRef<HTMLDivElement>(null);
@@ -333,6 +472,72 @@ export default function ArtimasScene() {
     }, 1900);
   }, []);
 
+  // ── Mobile Arc Carousel Navigation & Touch Gestures (< 768px) ──────────────
+  // Sync mobileEventIndex when activeYuga changes externally (e.g. wheel rotation or slider)
+  useEffect(() => {
+    if (activeYuga !== null) {
+      const currentEvent = EVENTS[mobileEventIndexRef.current];
+      if (!currentEvent || currentEvent.yuga !== YUGA_NAME_MAP[activeYuga]) {
+        const firstIdx = YUGA_START_EVENT_INDEX[activeYuga];
+        if (firstIdx !== undefined && firstIdx !== mobileEventIndexRef.current) {
+          setMobileEventIndex(firstIdx);
+        }
+      }
+    }
+  }, [activeYuga]);
+
+  const selectMobileEvent = useCallback(
+    (targetIndex: number) => {
+      const normalized = ((targetIndex % EVENTS.length) + EVENTS.length) % EVENTS.length;
+      setMobileEventIndex(normalized);
+
+      const targetEvent = EVENTS[normalized];
+      if (targetEvent) {
+        const targetYuga = YUGA_ANGLE_MAP[targetEvent.yuga];
+        if (targetYuga !== undefined && targetYuga !== activeYuga) {
+          goToYuga(targetYuga);
+        }
+      }
+    },
+    [activeYuga, goToYuga]
+  );
+
+  const handleArcTouchStart = (e: React.TouchEvent) => {
+    arcTouchStartX.current = e.touches[0].clientX;
+    arcTouchStartY.current = e.touches[0].clientY;
+    arcTouchDeltaX.current = 0;
+    arcTouchDeltaY.current = 0;
+    isArcSwiping.current = false;
+  };
+
+  const handleArcTouchMove = (e: React.TouchEvent) => {
+    const dx = e.touches[0].clientX - arcTouchStartX.current;
+    const dy = e.touches[0].clientY - arcTouchStartY.current;
+    arcTouchDeltaX.current = dx;
+    arcTouchDeltaY.current = dy;
+
+    if (!isArcSwiping.current && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+      isArcSwiping.current = true;
+    }
+  };
+
+  const handleArcTouchEnd = () => {
+    const threshold = 35;
+    if (
+      Math.abs(arcTouchDeltaX.current) > threshold &&
+      Math.abs(arcTouchDeltaX.current) > Math.abs(arcTouchDeltaY.current)
+    ) {
+      if (arcTouchDeltaX.current < 0) {
+        selectMobileEvent(mobileEventIndexRef.current + 1);
+      } else {
+        selectMobileEvent(mobileEventIndexRef.current - 1);
+      }
+    }
+    arcTouchDeltaX.current = 0;
+    arcTouchDeltaY.current = 0;
+    isArcSwiping.current = false;
+  };
+
   // ── Event listeners (active only inside Yugas mode) ─────────────────────────
 
   useEffect(() => {
@@ -355,16 +560,18 @@ export default function ArtimasScene() {
       const isCardTarget = Boolean(
         target && (
           target.closest('.yuga-events-showcase') ||
+          target.closest('.yuga-mobile-arc-showcase') ||
           target.closest('.yuga-decree-card') ||
           target.closest('.mobile-deck-indicator') ||
-          target.closest('.deck-dot')
+          target.closest('.deck-dot') ||
+          target.closest('.yuga-arc-dot')
         )
       );
 
       // Check if touch starts anywhere within the vertical band of the showcase cards
       // (this catches edge swipes in the gutters next to the cards)
       let isInShowcaseBand = false;
-      const showcaseEl = document.querySelector('.yuga-events-showcase');
+      const showcaseEl = document.querySelector('.yuga-events-showcase') || document.querySelector('.yuga-mobile-arc-showcase');
       if (showcaseEl) {
         const rect = showcaseEl.getBoundingClientRect();
         if (touch.clientY >= rect.top - 24 && touch.clientY <= rect.bottom + 24) {
@@ -389,9 +596,13 @@ export default function ArtimasScene() {
 
       if (isCardZoneTouch) {
         isCardZoneTouch = false;
-        // If swiped on or near the card edges, trigger card switch instead of changing Yuga!
-        if (Math.abs(diffX) > 35 || Math.abs(diffY) > 35) {
-          switchMobileCard(mobileCardIndexRef.current === 0 ? 1 : 0);
+        // If swiped horizontally on or near the card edges, trigger card switch along the arc!
+        if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX > 0) {
+            selectMobileEvent(mobileEventIndexRef.current + 1);
+          } else {
+            selectMobileEvent(mobileEventIndexRef.current - 1);
+          }
         }
         return; // NEVER rotate chakra from card zone!
       }
@@ -423,7 +634,7 @@ export default function ArtimasScene() {
       window.removeEventListener('touchend', onTouchEnd);
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [goToYuga, rotateChakra, switchMobileCard]);
+  }, [goToYuga, rotateChakra, selectMobileEvent]);
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -553,226 +764,97 @@ export default function ArtimasScene() {
             </div>
           </div>
 
-          {/* ── Yuga Event Showcase Cards (Mobile Deck & Desktop 3D) ──── */}
+          {/* ── Yuga Event Showcase Cards ──── */}
+          {/* Desktop 3D Dual-Card Showcase (>= 768px) */}
           {isYugasMode && activeYuga !== null && cardsReady && (
             <div
               className={`yuga-events-showcase yuga-showcase-${activeYuga}`}
-              key={activeYuga}
-              onTouchStart={handleDeckTouchStart}
-              onTouchMove={handleDeckTouchMove}
-              onTouchEnd={handleDeckTouchEnd}
+              key={`desktop-${activeYuga}`}
             >
-              {EVENTS.filter((e) => e.yuga === YUGA_NAME_MAP[activeYuga]).map((evt, idx) => {
-                const isFront = idx === mobileCardIndex;
-                const isSwitchingOut = switchingCard?.outgoing === idx;
-                const isSwitchingIn = switchingCard?.incoming === idx;
+              {EVENTS.filter((e) => e.yuga === YUGA_NAME_MAP[activeYuga]).map((evt, idx) => (
+                <div
+                  key={evt.id}
+                  className={`yuga-decree-card yuga-card-${activeYuga}`}
+                  style={{ animationDelay: `${idx * 0.08}s` }}
+                >
+                  <DecreeCardContent evt={evt} openMap={openMap} isSideCard={false} />
+                </div>
+              ))}
+            </div>
+          )}
 
-                let deckClass = isFront ? 'deck-front' : 'deck-back';
-                if (isSwitchingOut) {
-                  deckClass = 'deck-switching-out';
-                } else if (isSwitchingIn) {
-                  deckClass = 'deck-switching-in';
-                }
+          {/* Mobile Arc Carousel Showcase (< 768px) */}
+          {isYugasMode && activeYuga !== null && cardsReady && (
+            <div
+              className="yuga-mobile-arc-showcase"
+              onTouchStart={handleArcTouchStart}
+              onTouchMove={handleArcTouchMove}
+              onTouchEnd={handleArcTouchEnd}
+              role="region"
+              aria-label="Artimas Events Curved Carousel"
+            >
+              <div className="yuga-mobile-arc-stage">
+                {EVENTS.map((evt, idx) => {
+                  let offset = ((idx - mobileEventIndex) % 8 + 8) % 8;
+                  if (offset > 4) offset -= 8;
 
-                return (
-                  <div
-                    key={evt.id}
-                    className={`yuga-decree-card yuga-card-${activeYuga} ${deckClass}`}
-                    style={{ animationDelay: `${idx * 0.08}s` }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (switchingCard) return;
-                      if (!isFront) {
-                        switchMobileCard(idx);
-                      }
-                    }}
-                  >
-                    {/* Ornamental Decree Corner Brackets */}
-                    <div className="decree-corner top-left" aria-hidden="true" />
-                    <div className="decree-corner top-right" aria-hidden="true" />
-                    <div className="decree-corner bottom-left" aria-hidden="true" />
-                    <div className="decree-corner bottom-right" aria-hidden="true" />
+                  // Render only center and surrounding 2 cards on either side
+                  if (Math.abs(offset) > 2) return null;
 
-                    {/* Mobile Peek Swipe Tab Indicator (covering entire peeking strip box) */}
-                    <div className="yuga-deck-swipe-tab" aria-hidden="true">
-                      <span className="yuga-deck-swipe-text">SWIPE ↑</span>
+                  let posClass = 'arc-pos-center';
+                  if (offset === -1) posClass = 'arc-pos-left-1';
+                  else if (offset === 1) posClass = 'arc-pos-right-1';
+                  else if (offset === -2) posClass = 'arc-pos-left-2';
+                  else if (offset === 2) posClass = 'arc-pos-right-2';
+
+                  const isCenter = offset === 0;
+                  const cardYugaAngle = YUGA_ANGLE_MAP[evt.yuga];
+                  const isCurrentEpoch = cardYugaAngle === activeYuga;
+
+                  return (
+                    <div
+                      key={evt.id}
+                      className={`yuga-decree-card yuga-arc-card yuga-card-${cardYugaAngle} ${posClass} ${
+                        isCurrentEpoch ? 'yuga-card-active-epoch' : 'yuga-card-inactive-epoch'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isCenter) {
+                          selectMobileEvent(idx);
+                        }
+                      }}
+                      role={isCenter ? 'group' : 'button'}
+                      aria-label={`${evt.name} (${evt.yuga})`}
+                      tabIndex={isCenter ? 0 : -1}
+                    >
+                      <DecreeCardContent
+                        evt={evt}
+                        openMap={openMap}
+                        isSideCard={!isCenter}
+                      />
                     </div>
+                  );
+                })}
+              </div>
 
-                    <div className="yuga-decree-inner">
-                      {/* Top Header Group (Crest + Title) */}
-                      <div className="yuga-card-header-group">
-                        <div className="yuga-mythic-crest-box" aria-hidden="true">
-                          <MythicCrestIcon type={evt.mythicCrest || 'lotus'} />
-                        </div>
-                        {evt.overheadTitle && (
-                          <span className="yuga-decree-overhead-title">{evt.overheadTitle}</span>
-                        )}
-                        <h3 className="yuga-decree-title">{evt.name}</h3>
-                      </div>
-
-                      {/* Middle Body Group: Center Art + Short Description */}
-                      <div className="yuga-card-body">
-                        {/* Custom Center Art (Datathon Fish, Prompt Relay Lotus, Brandathon Turtle, Hackmatrix, CTF Feather, Among Us Art, Surprise Rath, Houdini Heist, or Standard Divider) */}
-                        {evt.slug === 'datathon' ? (
-                          <div className="yuga-card-center-art datathon-art" aria-hidden="true">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={MEDIA.images.datathonFish}
-                              alt="Datathon Matsya Golden Fish"
-                              className="yuga-art-img yuga-datathon-fish"
-                              draggable={false}
-                            />
-                          </div>
-                        ) : evt.slug === 'prompt-relay' ? (
-                          <div className="yuga-card-center-art prompt-relay-art" aria-hidden="true">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={MEDIA.images.promptRelayLotus}
-                              alt="Prompt Relay Golden Lotus"
-                              className="yuga-art-img yuga-prompt-relay-lotus"
-                              draggable={false}
-                            />
-                          </div>
-                        ) : evt.slug === 'brandathon' ? (
-                          <div className="yuga-card-center-art brandathon-art" aria-hidden="true">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={MEDIA.images.brandathonRath}
-                              alt="Brandathon Golden Rath"
-                              className="yuga-art-img yuga-brandathon-rath"
-                              draggable={false}
-                            />
-                          </div>
-                        ) : evt.slug === 'hackmatrix' ? (
-                          <div className="yuga-card-center-art hackmatrix-art" aria-hidden="true">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={MEDIA.images.hackmatrixArt}
-                              alt="HackMatrix Golden Emblem"
-                              className="yuga-art-img yuga-hackmatrix-art"
-                              draggable={false}
-                            />
-                          </div>
-                        ) : evt.slug === 'capture-the-flag' ? (
-                          <div className="yuga-card-center-art ctf-art" aria-hidden="true">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={MEDIA.images.ctfFeather}
-                              alt="CTF Golden Peacock Feather"
-                              className="yuga-art-img yuga-ctf-feather"
-                              draggable={false}
-                            />
-                          </div>
-                        ) : evt.slug === 'among-us' ? (
-                          <div className="yuga-card-center-art among-us-art" aria-hidden="true">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={MEDIA.images.amongUsArt}
-                              alt="Among Us Golden Bow & Arrow"
-                              className="yuga-art-img yuga-among-us-art"
-                              draggable={false}
-                            />
-                          </div>
-                        ) : (evt.slug === 'pixel-perfect' || evt.slug === 'surprise-event') ? (
-                          <div className="yuga-card-center-art surprise-art pixel-perfect-art" aria-hidden="true">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={MEDIA.images.pixelPerfectTurtle}
-                              alt="Surprise Event Kurma Golden Turtle"
-                              className="yuga-art-img yuga-surprise-turtle"
-                              draggable={false}
-                            />
-                          </div>
-                        ) : evt.slug === 'houdini-heist' ? (
-                          <div className="yuga-card-center-art houdini-art" aria-hidden="true">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={MEDIA.images.houdiniHeistArt}
-                              alt="Houdini Heist Golden Mace"
-                              className="yuga-art-img yuga-houdini-gada"
-                              draggable={false}
-                            />
-                          </div>
-                        ) : (
-                          /* Ornamental Divider with Epoch Star */
-                          <div className="decree-ornament-divider" aria-hidden="true">
-                            <span className="decree-divider-line" />
-                            <span className="decree-divider-gem">✦</span>
-                            <span className="decree-divider-line" />
-                          </div>
-                        )}
-
-                        {/* Short Description */}
-                        <p className="yuga-decree-desc">{evt.shortDescription}</p>
-                      </div>
-
-                      {/* Footer Group: Prize Pool + Actions */}
-                      <div className="yuga-card-footer">
-                        {evt.prizePool && (
-                          <div className="yuga-card-meta-row">
-                            <span className="yuga-decree-prize-badge">{evt.prizePool}</span>
-                          </div>
-                        )}
-
-                        {/* Action Buttons */}
-                        {(() => {
-                          const isRegistrationOpen = openMap[evt.slug] !== false && openMap[evt.id] !== false;
-                          return (
-                            <div className={`yuga-decree-actions ${!isRegistrationOpen ? 'single-btn is-closed' : ''}`}>
-                              {isRegistrationOpen ? (
-                                <>
-                                  <Link
-                                    href={evt.rulebookUrl}
-                                    className="yuga-decree-btn secondary"
-                                    onClick={(e) => e.stopPropagation()}
-                                    target={evt.rulebookUrl?.startsWith('http') ? '_blank' : undefined}
-                                    rel={evt.rulebookUrl?.startsWith('http') ? 'noopener noreferrer' : undefined}
-                                  >
-                                    VIEW RULEBOOK
-                                  </Link>
-                                  <Link
-                                    href={evt.registerUrl}
-                                    className="yuga-decree-btn primary"
-                                    onClick={(e) => e.stopPropagation()}
-                                    target={evt.registerUrl?.startsWith('http') ? '_blank' : undefined}
-                                    rel={evt.registerUrl?.startsWith('http') ? 'noopener noreferrer' : undefined}
-                                  >
-                                    ENTER TRIAL
-                                  </Link>
-                                </>
-                              ) : (
-                                <div
-                                  className="yuga-decree-btn closed"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  REGISTRATION CLOSED
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* Mobile Card Deck Dots Indicator */}
-              <div className="mobile-deck-indicator" aria-hidden="true">
-                <span
-                  className={`deck-dot ${mobileCardIndex === 0 ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    switchMobileCard(0);
-                  }}
-                />
-                <span
-                  className={`deck-dot ${mobileCardIndex === 1 ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    switchMobileCard(1);
-                  }}
-                />
+              {/* Mobile Arc Dot & Epoch Indicators */}
+              <div className="yuga-arc-dots-bar" aria-hidden="true">
+                {EVENTS.map((evt, idx) => {
+                  const isActive = idx === mobileEventIndex;
+                  const dotEpoch = YUGA_ANGLE_MAP[evt.yuga];
+                  return (
+                    <button
+                      key={evt.id}
+                      type="button"
+                      className={`yuga-arc-dot dot-epoch-${dotEpoch}${isActive ? ' active' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        selectMobileEvent(idx);
+                      }}
+                      aria-label={`Go to ${evt.name}`}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
